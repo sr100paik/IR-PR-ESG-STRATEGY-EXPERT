@@ -28,7 +28,7 @@ const Main: React.FC = () => {
             </h1>
             <div className="bg-white/5 backdrop-blur-sm border-l-2 border-blue-400 p-6 mb-10">
               <p className="text-base md:text-lg text-slate-200 leading-relaxed font-light">
-                <span className="font-semibold text-white">KOSDAQ 상장사 IR/ESG 실무 + 벤처 CEO 22년 경력</span><br />
+                <span className="font-semibold text-white">KOSDAQ 상장사 IR/PR/ESG 실무 + 벤처 CEO 22년 경력</span><br />
                 심사역의 예리한 통찰과 경영자의 책임감 있는 심장으로,<br />
                 기업의 본질적 가치를 증명하고 자본시장의 신뢰를 구축합니다.
               </p>
