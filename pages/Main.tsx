@@ -22,9 +22,9 @@ const Main: React.FC = () => {
             <span className="inline-block px-4 py-1.5 bg-white/10 backdrop-blur-sm border border-white/20 text-[10px] font-bold uppercase tracking-[0.2em] mb-8 rounded-sm">
               Executive Summary & Strategy
             </span>
-            <h1 className="serif text-4xl md:text-6xl font-bold leading-[1.2] mb-8 tracking-tight">
+            <h1 className="serif text-4xl md:text-6xl font-bold leading-tight mb-8">
               투자와 경영의 경계를 허무는 30년,<br />
-              <span className="text-[#A5C9FF]">실전 전략가</span> 백승룡입니다.
+              <span className="text-blue-400">실전 전략가</span> 백승룡입니다.
             </h1>
             <div className="bg-white/5 backdrop-blur-sm border-l-2 border-blue-400 p-6 mb-10">
               <p className="text-base md:text-lg text-slate-200 leading-relaxed font-light">
