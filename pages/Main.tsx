@@ -23,8 +23,7 @@ const Main: React.FC = () => {
               Executive Summary & Strategy
             </span>
             <h1 className="serif text-4xl md:text-6xl font-bold leading-[1.2] mb-8 tracking-tight">
-              투자와 경영의 경계를 허무는 <br className="hidden md:block" />
-              <span className="font-['Playfair_Display'] text-white">30</span>년,<br />
+              투자와 경영의 경계를 허무는 30년,<br />
               <span className="text-[#A5C9FF]">실전 전략가</span> 백승룡입니다.
             </h1>
             <div className="bg-white/5 backdrop-blur-sm border-l-2 border-blue-400 p-6 mb-10">
