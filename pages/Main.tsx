@@ -6,8 +6,8 @@ import { ArrowRight, TrendingUp, Shield, Briefcase, ChevronRight, Award, Users, 
 const Main: React.FC = () => {
   return (
     <div className="bg-white">
-      {/* Hero Section */}
-      <section className="relative h-[80vh] flex items-center overflow-hidden">
+      {/* Hero Section - 모바일 겹침 방지를 위해 items-start 및 pt-32 적용 (PC는 items-center md:pt-0 유지) */}
+      <section className="relative min-h-[85vh] md:h-[80vh] flex items-start md:items-center pt-32 md:pt-0 overflow-hidden">
         <div className="absolute inset-0 z-0">
           <img 
             src="https://res.cloudinary.com/dj1xp2ojh/image/upload/v1766722185/%EB%A9%94%EC%9D%B8%EB%B0%B0%EA%B2%BD_3_df7tkr.png" 
@@ -17,17 +17,18 @@ const Main: React.FC = () => {
           <div className="absolute inset-0 bg-gradient-to-r from-slate-900/80 via-slate-900/60 to-transparent"></div>
         </div>
         
-        <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-white">
+        <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-white mt-4 md:mt-0">
           <div className="max-w-3xl">
-            <span className="inline-block px-4 py-1.5 bg-white/10 backdrop-blur-sm border border-white/20 text-[10px] font-bold uppercase tracking-[0.2em] mb-8 rounded-sm">
+            <span className="inline-block px-4 py-1.5 bg-white/10 backdrop-blur-sm border border-white/20 text-[10px] font-bold uppercase tracking-[0.2em] mb-6 md:mb-8 rounded-sm">
               Executive Summary & Strategy
             </span>
-            <h1 className="serif text-4xl md:text-6xl font-bold leading-tight mb-8">
+            {/* 모바일 폰트 크기 미세 조정 (text-[32px] md:text-6xl) */}
+            <h1 className="serif text-[32px] md:text-6xl font-bold leading-tight mb-6 md:mb-8">
               투자와 경영의 경계를 허무는 30년,<br />
               <span className="text-blue-400">실전 전략가</span> 백승룡입니다.
             </h1>
-            <div className="bg-white/5 backdrop-blur-sm border-l-2 border-blue-400 p-6 mb-10">
-              <p className="text-base md:text-lg text-slate-200 leading-relaxed font-light">
+            <div className="bg-white/5 backdrop-blur-sm border-l-2 border-blue-400 p-5 md:p-6 mb-8 md:mb-10">
+              <p className="text-sm md:text-lg text-slate-200 leading-relaxed font-light">
                 <span className="font-semibold text-white">KOSDAQ 상장사 IR/PR/ESG 실무 + 벤처 CEO 22년 경력</span><br />
                 심사역의 예리한 통찰과 경영자의 책임감 있는 심장으로,<br />
                 기업의 본질적 가치를 증명하고 자본시장의 신뢰를 구축합니다.
@@ -136,7 +137,7 @@ const Main: React.FC = () => {
         </div>
       </section>
 
-      {/* Numbers Section - 통일된 회색 계열(Slate) 디자인으로 변경 */}
+      {/* Numbers Section */}
       <section className="py-24 bg-slate-50 border-y border-slate-100">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
@@ -145,7 +146,6 @@ const Main: React.FC = () => {
           </div>
           
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Card 1: DART */}
             <div className="bg-white p-10 flex flex-col items-center text-center relative border border-slate-200 hover:border-slate-900 transition-all shadow-sm rounded-sm group">
               <div className="mb-6 text-slate-400 group-hover:text-slate-900 transition-colors">
                 <ShieldCheck size={32} strokeWidth={1.5} />
@@ -155,7 +155,6 @@ const Main: React.FC = () => {
               <p className="text-[13px] text-slate-400 leading-relaxed">단 한 건의 불성실 공시 없음</p>
             </div>
             
-            {/* Card 2: Coverage */}
             <div className="bg-white p-10 flex flex-col items-center text-center relative border border-slate-200 hover:border-slate-900 transition-all shadow-sm rounded-sm group">
               <div className="mb-6 text-slate-400 group-hover:text-slate-900 transition-colors">
                 <TrendingUp size={32} strokeWidth={1.5} />
@@ -165,7 +164,6 @@ const Main: React.FC = () => {
               <p className="text-[13px] text-slate-400 leading-relaxed">기관 투자자 유입 및 리서치 활성화</p>
             </div>
 
-            {/* Card 3: Portfolio */}
             <div className="bg-white p-10 flex flex-col items-center text-center relative border border-slate-200 hover:border-slate-900 transition-all shadow-sm rounded-sm group">
               <div className="mb-6 text-slate-400 group-hover:text-slate-900 transition-colors">
                 <BriefcaseBusiness size={32} strokeWidth={1.5} />
@@ -175,7 +173,6 @@ const Main: React.FC = () => {
               <p className="text-[13px] text-slate-400 leading-relaxed">안철수연구소 등 대표적 엑시트 성공</p>
             </div>
 
-            {/* Card 4: Investment */}
             <div className="bg-white p-10 flex flex-col items-center text-center relative border border-slate-200 hover:border-slate-900 transition-all shadow-sm rounded-sm group">
               <div className="mb-6 text-slate-400 group-hover:text-slate-900 transition-colors">
                 <DollarSign size={32} strokeWidth={1.5} />
@@ -185,7 +182,6 @@ const Main: React.FC = () => {
               <p className="text-[13px] text-slate-400 leading-relaxed">LG전자, STIC, 산은캐피탈 등</p>
             </div>
 
-            {/* Card 5: Supply */}
             <div className="bg-white p-10 flex flex-col items-center text-center relative border border-slate-200 hover:border-slate-900 transition-all shadow-sm rounded-sm group">
               <div className="mb-6 text-slate-400 group-hover:text-slate-900 transition-colors">
                 <Building2 size={32} strokeWidth={1.5} />
@@ -195,7 +191,6 @@ const Main: React.FC = () => {
               <p className="text-[13px] text-slate-400 leading-relaxed">현대·대우·삼성건설 1군 건설사</p>
             </div>
 
-            {/* Card 6: Global */}
             <div className="bg-white p-10 flex flex-col items-center text-center relative border border-slate-200 hover:border-slate-900 transition-all shadow-sm rounded-sm group">
               <div className="mb-6 text-slate-400 group-hover:text-slate-900 transition-colors">
                 <Globe size={32} strokeWidth={1.5} />
