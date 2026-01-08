@@ -179,7 +179,7 @@ const Main: React.FC = () => {
               </div>
               <span className="text-[32px] font-bold text-[#0F172A] mb-3">50억+</span>
               <h4 className="text-[15px] font-bold text-[#334155] mb-2">투자 유치 실적</h4>
-              <p className="text-[13px] text-slate-400 leading-relaxed">LG전자, STIC, 산은캐피탈 등</p>
+              <p className="text-[13px] text-slate-400 leading-relaxed">LG전자, STIC, 미래에셋벤처투자, 산은캐피탈 등</p>
             </div>
 
             <div className="bg-white p-10 flex flex-col items-center text-center relative border border-slate-200 hover:border-slate-900 transition-all shadow-sm rounded-sm group">

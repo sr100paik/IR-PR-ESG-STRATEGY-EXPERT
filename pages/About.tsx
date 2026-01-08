@@ -136,7 +136,7 @@ const About: React.FC = () => {
                   <TrendingUp className="mr-2 text-orange-600" size={20} />
                   투자사 네트워크
                 </h4>
-                <p className="text-slate-700 text-sm">LG전자, STIC인베스트먼트, 산은캐피탈, 미래에셋벤처</p>
+                <p className="text-slate-700 text-sm">LG전자, STIC인베스트먼트, 미래에셋벤처투자, 산은캐피탈</p>
               </div>
               <div className="p-6 bg-indigo-50 border-l-4 border-indigo-600 md:col-span-2">
                 <h4 className="font-bold text-slate-900 mb-3 flex items-center">
@@ -159,7 +159,7 @@ const About: React.FC = () => {
                   company: '㈜엠플러스 (KOSDAQ)', 
                   role: 'ESG 기획실장', 
                   period: '2024 - 2026',
-                  tag: 'CURRENT',
+                  tag: 'IR/PR/ESG',
                   tagColor: 'bg-green-500'
                 },
                 { 
