@@ -108,18 +108,34 @@ const Navigation = () => {
 const Footer = () => {
   const [selectedSite, setSelectedSite] = useState('');
 
-  // 파트너 리스트 순서, 항목 및 URL 수정
+  // 파트너 리스트 순서, 항목 및 URL 설정
   const familySites = [
-    { name: '파트너 선택', url: '' },
+    { name: 'Family Site 선택', url: '' },
     { name: '100% 인사이트', url: 'https://bizfromatoz.com' },
     { name: 'Pro OH 컨설팅', url: 'https://proventure.kr' },
     { name: '법률 서비스 파트너', url: '#' },
     { name: '세무회계 서비스 파트너', url: '#' },
   ];
 
-  const handleGoSite = () => {
-    if (selectedSite && selectedSite !== '' && selectedSite !== '#') {
-      window.open(selectedSite, '_blank');
+  // 모든 파트너 항목에 대해 선택 시 즉시 이동하는 핸들러
+  const handleSiteChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const url = e.target.value;
+    setSelectedSite(url);
+
+    if (url === '') return;
+
+    // 링크가 없는 파트너 항목 처리 (준비 중 안내)
+    if (url === '#') {
+      alert('해당 서비스 파트너 페이지는 현재 준비 중입니다.');
+      setTimeout(() => setSelectedSite(''), 100);
+      return;
+    }
+
+    // 유효한 URL(100% 인사이트, Pro OH 컨설팅 등)인 경우 새 창으로 즉시 이동
+    if (url.startsWith('http')) {
+      window.open(url, '_blank');
+      // 이동 후 드롭다운 상태를 초기화하여 다시 선택 가능하게 함
+      setTimeout(() => setSelectedSite(''), 500);
     }
   };
 
@@ -185,31 +201,25 @@ const Footer = () => {
               </div>
             </div>
 
-            {/* Family Site Selector - 색상을 Slate/Blue로 유지 */}
+            {/* Family Site Selector - '이동' 버튼 없이 모든 항목 자동 이동 적용 */}
             <div className="w-full md:max-w-[240px]">
-              <h3 className="serif text-white font-bold mb-3 text-lg">Family Site</h3>
-              <div className="flex gap-2">
-                <div className="relative flex-1">
-                  <select 
-                    value={selectedSite}
-                    onChange={(e) => setSelectedSite(e.target.value)}
-                    className="w-full bg-slate-800 border border-slate-700 text-slate-300 text-sm px-3 py-2.5 rounded-sm appearance-none focus:outline-none focus:border-blue-500 transition-colors cursor-pointer"
-                  >
-                    {familySites.map((site, idx) => (
-                      <option key={idx} value={site.url}>{site.name}</option>
-                    ))}
-                  </select>
-                  <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
-                </div>
-                <button 
-                  onClick={handleGoSite}
-                  disabled={!selectedSite || selectedSite === '' || selectedSite === '#'}
-                  className="bg-slate-700 hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-2.5 rounded-sm text-sm font-bold transition-all flex items-center gap-1 whitespace-nowrap"
+              <h3 className="serif text-white font-bold mb-3 text-lg flex items-center gap-2">
+                Family Site
+                <ExternalLink size={16} className="text-slate-500" />
+              </h3>
+              <div className="relative">
+                <select 
+                  value={selectedSite}
+                  onChange={handleSiteChange}
+                  className="w-full bg-slate-800 border border-slate-700 text-slate-300 text-sm px-4 py-3 rounded-sm appearance-none focus:outline-none focus:border-blue-500 hover:border-slate-500 transition-colors cursor-pointer"
                 >
-                  이동
-                  <ExternalLink size={14} />
-                </button>
+                  {familySites.map((site, idx) => (
+                    <option key={idx} value={site.url}>{site.name}</option>
+                  ))}
+                </select>
+                <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
               </div>
+              <p className="text-[10px] text-slate-500 mt-2 italic">* 파트너 선택 시 해당 사이트로 즉시 이동합니다.</p>
             </div>
           </div>
         </div>
