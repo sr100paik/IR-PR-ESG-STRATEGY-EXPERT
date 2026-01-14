@@ -1,6 +1,7 @@
-import React, { Suspense, lazy } from 'react';
+
+import React, { Suspense, lazy, useState } from 'react';
 import { HashRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
-import { Menu, X, Download, Linkedin, Mail, ArrowRight, FileText, Award, TrendingUp, Globe } from 'lucide-react';
+import { Menu, X, Download, Mail, ArrowRight, FileText, Award, TrendingUp, Globe, ChevronDown, ExternalLink } from 'lucide-react';
 
 // Lazy load pages for performance
 const Main = lazy(() => import('./pages/Main'));
@@ -104,94 +105,130 @@ const Navigation = () => {
   );
 };
 
-const Footer = () => (
-  <footer className="bg-slate-900 text-slate-300 py-16">
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-      {/* Main Footer Content */}
-      <div className="grid md:grid-cols-3 gap-12 border-b border-slate-800 pb-12">
-        {/* About Section */}
-        <div className="md:col-span-2">
-          <h2 className="serif text-white text-2xl font-bold mb-4">백승룡 (Daniel SR, Paik)</h2>
-          <p className="max-w-2xl text-slate-400 leading-relaxed mb-6">
-            KOSDAQ 상장사 실무와 20년 이상의 벤처기업 CEO 경력을 보유한 전략가. 기업 가치 제고와 지속가능한 성장을 위한 최상의 파트너십을 제공합니다.
-          </p>
-          
-          {/* Quick Stats */}
-          <div className="grid grid-cols-3 gap-6 mt-8">
-            <div className="text-center md:text-left">
-              <div className="flex items-center space-x-2 text-white mb-1">
-                <Award size={18} />
-                <span className="text-2xl font-bold">30+</span>
+const Footer = () => {
+  const [selectedSite, setSelectedSite] = useState('');
+
+  // 파트너 리스트 순서, 항목 및 URL 수정
+  const familySites = [
+    { name: '파트너 선택', url: '' },
+    { name: '100% 인사이트', url: 'https://bizfromatoz.com' },
+    { name: 'Pro OH 컨설팅', url: 'https://proventure.kr' },
+    { name: '법률 서비스 파트너', url: '#' },
+    { name: '세무회계 서비스 파트너', url: '#' },
+  ];
+
+  const handleGoSite = () => {
+    if (selectedSite && selectedSite !== '' && selectedSite !== '#') {
+      window.open(selectedSite, '_blank');
+    }
+  };
+
+  return (
+    <footer className="bg-slate-900 text-slate-300 py-16">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Main Footer Content */}
+        <div className="grid md:grid-cols-3 gap-12 border-b border-slate-800 pb-12">
+          {/* About Section */}
+          <div className="md:col-span-2">
+            <h2 className="serif text-white text-2xl font-bold mb-4">백승룡 (Daniel SR, Paik)</h2>
+            <p className="max-w-2xl text-slate-400 leading-relaxed mb-6">
+              KOSDAQ 상장사 실무와 20년 이상의 벤처기업 CEO 경력을 보유한 전략가. 기업 가치 제고와 지속가능한 성장을 위한 최상의 파트너십을 제공합니다.
+            </p>
+            
+            {/* Quick Stats */}
+            <div className="grid grid-cols-3 gap-6 mt-8">
+              <div className="text-center md:text-left">
+                <div className="flex items-center space-x-2 text-white mb-1">
+                  <Award size={18} />
+                  <span className="text-2xl font-bold">30+</span>
+                </div>
+                <p className="text-xs text-slate-500">Years Experience</p>
               </div>
-              <p className="text-xs text-slate-500">Years Experience</p>
+              <div className="text-center md:text-left">
+                <div className="flex items-center space-x-2 text-white mb-1">
+                  <TrendingUp size={18} />
+                  <span className="text-2xl font-bold">50억+</span>
+                </div>
+                <p className="text-xs text-slate-500">Investment Secured</p>
+              </div>
+              <div className="text-center md:text-left">
+                <div className="flex items-center space-x-2 text-white mb-1">
+                  <Globe size={18} />
+                  <span className="text-2xl font-bold">4개국</span>
+                </div>
+                <p className="text-xs text-slate-500">Global Expansion</p>
+              </div>
             </div>
-            <div className="text-center md:text-left">
-              <div className="flex items-center space-x-2 text-white mb-1">
-                <TrendingUp size={18} />
-                <span className="text-2xl font-bold">50억+</span>
+          </div>
+
+          {/* Contact & Family Site Section */}
+          <div className="flex flex-col md:items-end justify-between space-y-8">
+            <div className="w-full md:w-auto">
+              <h3 className="text-white font-semibold mb-3 text-sm uppercase tracking-wider">Contact</h3>
+              <div className="flex flex-col space-y-3">
+                <a 
+                  href="mailto:sr100@kakao.com" 
+                  className="flex items-center space-x-2 text-slate-400 hover:text-white transition-colors"
+                >
+                  <Mail size={18} />
+                  <span className="text-sm">sr100@kakao.com</span>
+                </a>
+                <a 
+                  href="https://foj9p10hxsmxhnzm.public.blob.vercel-storage.com/Daniel_SR_Paik_CV.pdf" 
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center space-x-2 text-sm text-slate-400 hover:text-white transition-colors"
+                >
+                  <FileText size={18} />
+                  <span className="text-sm">이력서(PDF) 다운로드</span>
+                </a>
               </div>
-              <p className="text-xs text-slate-500">Investment Secured</p>
             </div>
-            <div className="text-center md:text-left">
-              <div className="flex items-center space-x-2 text-white mb-1">
-                <Globe size={18} />
-                <span className="text-2xl font-bold">4개국</span>
+
+            {/* Family Site Selector - 색상을 Slate/Blue로 유지 */}
+            <div className="w-full md:max-w-[240px]">
+              <h3 className="serif text-white font-bold mb-3 text-lg">Family Site</h3>
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <select 
+                    value={selectedSite}
+                    onChange={(e) => setSelectedSite(e.target.value)}
+                    className="w-full bg-slate-800 border border-slate-700 text-slate-300 text-sm px-3 py-2.5 rounded-sm appearance-none focus:outline-none focus:border-blue-500 transition-colors cursor-pointer"
+                  >
+                    {familySites.map((site, idx) => (
+                      <option key={idx} value={site.url}>{site.name}</option>
+                    ))}
+                  </select>
+                  <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+                </div>
+                <button 
+                  onClick={handleGoSite}
+                  disabled={!selectedSite || selectedSite === '' || selectedSite === '#'}
+                  className="bg-slate-700 hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-2.5 rounded-sm text-sm font-bold transition-all flex items-center gap-1 whitespace-nowrap"
+                >
+                  이동
+                  <ExternalLink size={14} />
+                </button>
               </div>
-              <p className="text-xs text-slate-500">Global Expansion</p>
             </div>
           </div>
         </div>
 
-        {/* Contact & Download Section */}
-        <div className="flex flex-col md:items-end justify-start space-y-6">
-          <div>
-            <h3 className="text-white font-semibold mb-3 text-sm uppercase tracking-wider">Contact</h3>
-            <div className="flex flex-col space-y-3">
-              <a 
-                href="mailto:sr100@kakao.com" 
-                className="flex items-center space-x-2 text-slate-400 hover:text-white transition-colors"
-              >
-                <Mail size={18} />
-                <span className="text-sm">sr100@kakao.com</span>
-              </a>
-              <a 
-                href="https://linkedin.com" 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="flex items-center space-x-2 text-slate-400 hover:text-white transition-colors"
-              >
-                <Linkedin size={18} />
-                <span className="text-sm">LinkedIn Profile</span>
-              </a>
-            </div>
+        {/* Bottom Footer */}
+        <div className="mt-8 flex flex-col md:flex-row justify-between items-center text-xs text-slate-500 space-y-4 md:space-y-0">
+          <p>© 2024 Paik Seung ryong. All rights reserved.</p>
+          <div className="flex space-x-6">
+            <Link to="/" className="hover:text-slate-300 transition-colors">Home</Link>
+            <Link to="/track-record" className="hover:text-slate-300 transition-colors">Track Record</Link>
+            <Link to="/services" className="hover:text-slate-300 transition-colors">Services</Link>
+            <Link to="/about" className="hover:text-slate-300 transition-colors">About</Link>
+            <Link to="/contact" className="hover:text-slate-300 transition-colors">Contact</Link>
           </div>
-          
-          <a 
-            href="https://foj9p10hxsmxhnzm.public.blob.vercel-storage.com/Daniel_SR_Paik_CV.pdf" 
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center space-x-2 text-sm bg-slate-800 hover:bg-slate-700 text-white px-5 py-3 rounded-sm transition-all shadow-md hover:shadow-lg group"
-          >
-            <Download size={18} className="group-hover:translate-y-0.5 transition-transform" />
-            <span className="font-medium">이력서(PDF) 다운로드</span>
-          </a>
         </div>
       </div>
-
-      {/* Bottom Footer */}
-      <div className="mt-8 flex flex-col md:flex-row justify-between items-center text-xs text-slate-500 space-y-4 md:space-y-0">
-        <p>© 2024 Paik Seung ryong. All rights reserved.</p>
-        <div className="flex space-x-6">
-          <Link to="/" className="hover:text-slate-300 transition-colors">Home</Link>
-          <Link to="/track-record" className="hover:text-slate-300 transition-colors">Track Record</Link>
-          <Link to="/services" className="hover:text-slate-300 transition-colors">Services</Link>
-          <Link to="/about" className="hover:text-slate-300 transition-colors">About</Link>
-          <Link to="/contact" className="hover:text-slate-300 transition-colors">Contact</Link>
-        </div>
-      </div>
-    </div>
-  </footer>
-);
+    </footer>
+  );
+};
 
 const App: React.FC = () => {
   return (

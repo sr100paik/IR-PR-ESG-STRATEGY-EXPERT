@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Mail, Phone, MapPin, Send, Download, CheckCircle, Loader2, Users, Building2, TrendingUp, Scale, Rocket, HelpCircle } from 'lucide-react';
 
@@ -79,7 +80,7 @@ const Contact: React.FC = () => {
           </p>
         </div>
 
-        {/* Target Clients Section - NEW */}
+        {/* Target Clients Section */}
         <div className="mb-16 bg-white p-8 md:p-12 document-shadow border border-slate-100">
           <div className="flex items-center space-x-3 mb-8">
             <Users className="text-slate-900" size={32} />
