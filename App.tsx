@@ -108,11 +108,11 @@ const Navigation = () => {
 const Footer = () => {
   const [selectedSite, setSelectedSite] = useState('');
 
-  // 파트너 리스트 순서, 항목 및 URL 설정
+  // 파트너 리스트 순서, 항목 명칭 및 URL 설정
   const familySites = [
-    { name: 'Family Site 선택', url: '' },
-    { name: '100% 인사이트', url: 'https://bizfromatoz.com' },
-    { name: 'Pro OH 컨설팅', url: 'https://proventure.kr' },
+    { name: '파트너 선택', url: '' },
+    { name: '100% 인사이트 파트너', url: 'https://bizfromatoz.com' },
+    { name: 'Pro OH 컨설팅 파트너', url: 'https://proventure.kr' },
     { name: '법률 서비스 파트너', url: '#' },
     { name: '세무회계 서비스 파트너', url: '#' },
   ];
@@ -131,7 +131,7 @@ const Footer = () => {
       return;
     }
 
-    // 유효한 URL(100% 인사이트, Pro OH 컨설팅 등)인 경우 새 창으로 즉시 이동
+    // 유효한 URL인 경우 새 창으로 즉시 이동
     if (url.startsWith('http')) {
       window.open(url, '_blank');
       // 이동 후 드롭다운 상태를 초기화하여 다시 선택 가능하게 함
