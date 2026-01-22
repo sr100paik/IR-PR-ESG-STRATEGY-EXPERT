@@ -111,9 +111,9 @@ const Footer = () => {
   // 파트너 리스트 순서, 항목 명칭 및 URL 설정
   const familySites = [
     { name: '파트너 선택', url: '' },
-    { name: '100% 인사이트 파트너', url: 'https://bizfromatoz.com' },
+    { name: '백프로 인사이트 파트너', url: 'https://bizfromatoz.com' },
     { name: 'Pro OH 컨설팅 파트너', url: 'https://proventure.kr' },
-    { name: '법률 서비스 파트너', url: '#' },
+    { name: '법률 서비스 파트너', url: 'https://naver.me/FFaXQdMu' },
     { name: '세무회계 서비스 파트너', url: '#' },
   ];
 
@@ -177,7 +177,7 @@ const Footer = () => {
             </div>
           </div>
 
-          {/* Contact & Family Site Section */}
+          {/* Contact & Partnership Section */}
           <div className="flex flex-col md:items-end justify-between space-y-8">
             <div className="w-full md:w-auto">
               <h3 className="text-white font-semibold mb-3 text-sm uppercase tracking-wider">Contact</h3>
@@ -201,10 +201,10 @@ const Footer = () => {
               </div>
             </div>
 
-            {/* Family Site Selector - '이동' 버튼 없이 모든 항목 자동 이동 적용 */}
-            <div className="w-full md:max-w-[240px]">
+            {/* Partnership Selector */}
+            <div className="w-full md:max-w-[280px]">
               <h3 className="serif text-white font-bold mb-3 text-lg flex items-center gap-2">
-                Family Site
+                Proventure Consulting Group
                 <ExternalLink size={16} className="text-slate-500" />
               </h3>
               <div className="relative">
