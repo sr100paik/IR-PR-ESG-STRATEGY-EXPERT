@@ -1,7 +1,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageSquare, X, Send, Bot, Loader2, Minus } from 'lucide-react';
-import { GoogleGenAI } from "@google/genai";
+import { MessageSquare, X, Send, Bot, Loader2, Key } from 'lucide-react';
+import { GoogleGenAI, Chat } from "@google/genai";
 
 type Message = {
   role: 'user' | 'model';
@@ -18,9 +18,12 @@ const AIChatWidget: React.FC = () => {
     }
   ]);
   const [isTyping, setIsTyping] = useState(false);
+  const [needsKey, setNeedsKey] = useState(false);
+  
   const scrollRef = useRef<HTMLDivElement>(null);
+  const chatRef = useRef<Chat | null>(null);
 
-  // 시스템 인스트럭션: 백승룡 전문가의 프로필 정보를 AI에게 주입
+  // 시스템 인스트럭션
   const systemInstruction = `
     당신은 '백승룡(Daniel SR, Paik)' 전문가의 AI 상담 어시스턴트입니다. 
     사용자의 질문에 백승룡 전문가의 경력과 역량을 바탕으로 전문적이고 친절하게 답변하세요.
@@ -38,9 +41,8 @@ const AIChatWidget: React.FC = () => {
     [답변 원칙 및 스타일 가이드]
     - 정중하고 신뢰감 있는 비즈니스 톤앤매너를 유지하세요.
     - 구체적인 수치(50억, 22년, 5만 세대 등)를 활용해 전문성을 강조하세요.
-    - 중요: 답변 시 마크다운 기호(예: **, __, # 등)를 절대 사용하지 마세요. 강조가 필요한 경우 텍스트의 흐름으로만 강조하세요.
+    - 답변 시 마크다운 기호(예: **, __, # 등)를 절대 사용하지 마세요. 강조가 필요한 경우 텍스트의 흐름으로만 강조하세요.
     - 백승룡 전문가가 직접 답변하는 것이 아니라, '어시스턴트'로서 정보를 제공하는 형식입니다.
-    - 만약 모르는 정보이거나 상세한 상담이 필요한 경우, 'Contact' 페이지를 통한 상담 신청을 권유하세요.
   `;
 
   useEffect(() => {
@@ -49,8 +51,46 @@ const AIChatWidget: React.FC = () => {
     }
   }, [messages, isTyping]);
 
+  // API 키 선택 확인
+  const checkApiKey = async () => {
+    try {
+      if (window.aistudio && typeof window.aistudio.hasSelectedApiKey === 'function') {
+        const hasKey = await window.aistudio.hasSelectedApiKey();
+        if (!hasKey) {
+          setNeedsKey(true);
+          return false;
+        }
+      }
+      setNeedsKey(false);
+      return true;
+    } catch (e) {
+      console.error("API Key check error", e);
+      return true;
+    }
+  };
+
+  const handleOpenKeySelector = async () => {
+    if (window.aistudio && typeof window.aistudio.openSelectKey === 'function') {
+      await window.aistudio.openSelectKey();
+      setNeedsKey(false);
+    }
+  };
+
+  const initializeChat = () => {
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+    chatRef.current = ai.chats.create({
+      model: 'gemini-3-flash-preview',
+      config: {
+        systemInstruction: systemInstruction,
+      },
+    });
+  };
+
   const handleSend = async () => {
     if (!input.trim() || isTyping) return;
+
+    const hasKey = await checkApiKey();
+    if (!hasKey) return;
 
     const userMessage = input.trim();
     setInput('');
@@ -58,15 +98,11 @@ const AIChatWidget: React.FC = () => {
     setIsTyping(true);
 
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
-      const chat = ai.chats.create({
-        model: 'gemini-3-flash-preview',
-        config: {
-          systemInstruction: systemInstruction,
-        },
-      });
+      if (!chatRef.current) {
+        initializeChat();
+      }
 
-      const responseStream = await chat.sendMessageStream({ message: userMessage });
+      const responseStream = await chatRef.current!.sendMessageStream({ message: userMessage });
       
       let fullResponse = '';
       setMessages(prev => [...prev, { role: 'model', text: '' }]);
@@ -82,9 +118,18 @@ const AIChatWidget: React.FC = () => {
           });
         }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("AI Chat Error:", error);
-      setMessages(prev => [...prev, { role: 'model', text: '죄송합니다. 통신 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.' }]);
+      
+      if (error.message?.includes("Requested entity was not found") || error.message?.includes("404")) {
+        setMessages(prev => [...prev, { 
+          role: 'model', 
+          text: '죄송합니다. 서비스 이용을 위해 API 키 설정이 필요합니다. 결제 수단이 등록된 구글 클라우드 프로젝트의 API 키를 선택해 주세요.' 
+        }]);
+        setNeedsKey(true);
+      } else {
+        setMessages(prev => [...prev, { role: 'model', text: '죄송합니다. 일시적인 통신 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.' }]);
+      }
     } finally {
       setIsTyping(false);
     }
@@ -108,18 +153,16 @@ const AIChatWidget: React.FC = () => {
                 <h3 className="font-bold text-sm">백승룡 AI 어시스턴트</h3>
                 <p className="text-[10px] text-slate-300 flex items-center gap-1">
                   <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
-                  실시간 상담 가능
+                  상담 대기 중
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-1">
-              <button 
-                onClick={() => setIsOpen(false)}
-                className="p-1 hover:bg-white/10 rounded-full transition-colors"
-              >
-                <X size={20} />
-              </button>
-            </div>
+            <button 
+              onClick={() => setIsOpen(false)}
+              className="p-1 hover:bg-white/10 rounded-full transition-colors"
+            >
+              <X size={20} />
+            </button>
           </div>
 
           {/* Body */}
@@ -145,6 +188,28 @@ const AIChatWidget: React.FC = () => {
                 </div>
               </div>
             )}
+            {needsKey && (
+              <div className="flex flex-col items-center gap-4 p-6 bg-white border border-dashed border-slate-300 rounded-xl text-center">
+                <Key size={32} className="text-[#1e3a5f] mb-2" />
+                <p className="text-sm text-slate-600">
+                  서비스 이용을 위해<br/><b>결제 수단이 등록된</b> 구글 API 키가 필요합니다.
+                </p>
+                <button 
+                  onClick={handleOpenKeySelector}
+                  className="bg-[#1e3a5f] text-white px-6 py-2.5 rounded-full text-sm font-bold shadow-lg hover:bg-slate-800 transition-all"
+                >
+                  API 키 선택하기
+                </button>
+                <a 
+                  href="https://ai.google.dev/gemini-api/docs/billing" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-xs text-slate-400 underline"
+                >
+                  결제 등록 안내 보기
+                </a>
+              </div>
+            )}
           </div>
 
           {/* Footer */}
@@ -155,14 +220,15 @@ const AIChatWidget: React.FC = () => {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                placeholder="상담 내용을 입력하세요..."
-                className="w-full bg-slate-100 border-none rounded-full py-3 pl-4 pr-12 text-sm focus:ring-2 focus:ring-[#1e3a5f] transition-all outline-none"
+                disabled={needsKey}
+                placeholder={needsKey ? "API 키를 먼저 설정해주세요" : "상담 내용을 입력하세요..."}
+                className="w-full bg-slate-100 border-none rounded-full py-3 pl-4 pr-12 text-sm focus:ring-2 focus:ring-[#1e3a5f] transition-all outline-none disabled:opacity-50"
               />
               <button 
                 onClick={handleSend}
-                disabled={!input.trim() || isTyping}
+                disabled={!input.trim() || isTyping || needsKey}
                 className={`absolute right-1 p-2 rounded-full transition-all ${
-                  input.trim() && !isTyping ? 'text-[#1e3a5f] hover:bg-slate-200' : 'text-slate-300'
+                  input.trim() && !isTyping && !needsKey ? 'text-[#1e3a5f] hover:bg-slate-200' : 'text-slate-300'
                 }`}
               >
                 <Send size={20} />
