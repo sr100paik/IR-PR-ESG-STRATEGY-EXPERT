@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageSquare, X, Send, Bot, Info } from 'lucide-react';
+import { MessageSquare, X, Send, Bot, Info, AlertCircle } from 'lucide-react';
 import { GoogleGenAI } from "@google/genai";
 
 type Message = {
@@ -18,6 +18,7 @@ const AIChatWidget: React.FC = () => {
     }
   ]);
   const [isTyping, setIsTyping] = useState(false);
+  const [debugInfo, setDebugInfo] = useState<string | null>(null);
   
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -50,17 +51,24 @@ const AIChatWidget: React.FC = () => {
     setInput('');
     setMessages(prev => [...prev, { role: 'user', text: userMessage }]);
     setIsTyping(true);
+    setDebugInfo(null);
 
     try {
-      const apiKey = process.env.API_KEY;
+      // 디버깅을 위해 환경 변수 존재 여부 확인 (값은 노출하지 않음)
+      console.log("Checking API Keys...");
+      
+      // Vercel에서 주입되는 여러 가능한 변수명 확인
+      // @ts-ignore
+      const apiKey = process.env.API_KEY || process.env.VITE_API_KEY || process.env.Landing_Page_AI;
       
       if (!apiKey) {
-        throw new Error("API_KEY is not defined in environment variables.");
+        console.error("API Key is missing in process.env");
+        setDebugInfo("환경 변수(API_KEY)를 찾을 수 없습니다. Vercel 설정을 확인하세요.");
+        throw new Error("KEY_MISSING");
       }
 
       const ai = new GoogleGenAI({ apiKey });
       
-      // 채팅 히스토리 구성 (첫 번째 환영 메시지 제외)
       const chatHistory = currentHistory.slice(1).map(m => ({
         role: m.role,
         parts: [{ text: m.text }]
@@ -91,10 +99,21 @@ const AIChatWidget: React.FC = () => {
         }
       }
     } catch (error: any) {
-      console.error("AI Chat Error:", error);
+      console.error("Gemini API Error Detail:", error);
+      
+      let errorText = '현재 상담 연결에 어려움이 있습니다. ';
+      
+      if (error.message === "KEY_MISSING") {
+        errorText += "Vercel 설정에서 변수 이름을 'API_KEY'로 등록하고 다시 배포해 주세요.";
+      } else if (error.message?.includes("403") || error.message?.includes("API key not valid")) {
+        errorText += "등록된 API 키가 유효하지 않습니다. Google AI Studio에서 새 키를 발급받아 교체해 주세요.";
+      } else {
+        errorText += "잠시 후 다시 시도해 주시기 바랍니다.";
+      }
+
       setMessages(prev => [...prev, { 
         role: 'model', 
-        text: '죄송합니다. 서비스와 통신하는 중 오류가 발생했습니다. Vercel 설정에서 API_KEY 환경 변수가 등록되어 있는지 확인해 주세요.' 
+        text: errorText
       }]);
     } finally {
       setIsTyping(false);
@@ -150,6 +169,13 @@ const AIChatWidget: React.FC = () => {
                     <span className="w-1.5 h-1.5 bg-slate-300 rounded-full animate-bounce [animation-delay:0.4s]"></span>
                   </div>
                 </div>
+              </div>
+            )}
+
+            {debugInfo && (
+              <div className="m-2 p-3 bg-red-50 border border-red-100 rounded-xl text-red-800 text-[11px] flex items-start gap-2">
+                <AlertCircle size={14} className="mt-0.5 flex-shrink-0" />
+                <p>{debugInfo}</p>
               </div>
             )}
           </div>
