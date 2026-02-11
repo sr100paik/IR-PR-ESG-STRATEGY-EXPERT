@@ -1,7 +1,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageSquare, X, Send, Bot, Loader2, Key, Settings } from 'lucide-react';
-import { GoogleGenAI, Chat } from "@google/genai";
+import { MessageSquare, X, Send, Bot, Loader2, Key, AlertCircle, Info } from 'lucide-react';
+import { GoogleGenAI } from "@google/genai";
 
 type Message = {
   role: 'user' | 'model';
@@ -14,16 +14,14 @@ const AIChatWidget: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'model',
-      text: '안녕하세요. 백승룡 전문가의 AI 상담 어시스턴트입니다. 전략, IR/PR, ESG 경영 등 궁금하신 점을 물어보세요.'
+      text: '안녕하세요. 백승룡 전문가의 AI 상담 어시스턴트입니다. 전략, IR/PR, ESG 경영 등 궁금하신 점을 편하게 물어보세요.'
     }
   ]);
   const [isTyping, setIsTyping] = useState(false);
-  const [needsKey, setNeedsKey] = useState(false);
+  const [errorStatus, setErrorStatus] = useState<'none' | 'key_missing' | 'api_error'>('none');
   
   const scrollRef = useRef<HTMLDivElement>(null);
-  const chatRef = useRef<Chat | null>(null);
 
-  // 시스템 인스트럭션
   const systemInstruction = `
     당신은 '백승룡(Daniel SR, Paik)' 전문가의 AI 상담 어시스턴트입니다. 
     사용자의 질문에 백승룡 전문가의 경력과 역량을 바탕으로 전문적이고 친절하게 답변하세요.
@@ -31,89 +29,60 @@ const AIChatWidget: React.FC = () => {
     [백승룡 전문가 핵심 정보]
     - 경력: 30년 이상의 경영전략 및 자본시장 전문가.
     - 주요 역량: IR, PR, ESG 경영체계 구축, IPO 자문, M&A 전략, 벤처투자.
-    - 주요 경력: 
-      1. ㈜엠플러스(KOSDAQ 상장사) ESG 기획실장 (현재): IR/PR/ESG 총괄, DART 공시 100% 적시성 달성.
-      2. ㈜플레넷 대표이사 (22년): LS그룹 계열사 Spin-off 창업, 50억 투자 유치, 1군 건설사 5만 세대 홈넷 수주.
-      3. 벤처캐피탈(현대, LG, 삼부) 책임심사역 (7년): 안철수연구소 등 10개 유망 벤처 투자 성공.
-    - 학력: 한양대학교 경영대학원 MBA (IPO 가격 결정 연구), 한양대학교 경영학 학사.
-    - 강점: 심사역의 예리한 분석력과 22년 CEO의 실전 경영 감각을 결합한 솔루션 제공.
-
-    [답변 원칙 및 스타일 가이드]
-    - 정중하고 신뢰감 있는 비즈니스 톤앤매너를 유지하세요.
-    - 구체적인 수치(50억, 22년, 5만 세대 등)를 활용해 전문성을 강조하세요.
-    - 답변 시 마크다운 기호(예: **, __, # 등)를 절대 사용하지 마세요. 강조가 필요한 경우 텍스트의 흐름으로만 강조하세요.
-    - 백승룡 전문가가 직접 답변하는 것이 아니라, '어시스턴트'로서 정보를 제공하는 형식입니다.
+    - 주요 경력: 1. ㈜엠플러스 ESG 기획실장, 2. ㈜플레넷 대표이사 (22년), 3. VC 책임심사역 (7년).
+    - 답변 원칙: 마크다운(별표 등) 기호를 절대 사용하지 마세요. 텍스트로만 답변하세요.
   `;
-
-  // API 키 선택 확인 함수
-  const checkApiKeyStatus = async () => {
-    try {
-      if (window.aistudio && typeof window.aistudio.hasSelectedApiKey === 'function') {
-        const hasKey = await window.aistudio.hasSelectedApiKey();
-        setNeedsKey(!hasKey);
-        return hasKey;
-      }
-      return true;
-    } catch (e) {
-      console.error("API Key check error", e);
-      return true;
-    }
-  };
-
-  // 채팅창 열릴 때마다 키 상태 체크
-  useEffect(() => {
-    if (isOpen) {
-      checkApiKeyStatus();
-    }
-  }, [isOpen]);
 
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages, isTyping, needsKey]);
+  }, [messages, isTyping]);
 
   const handleOpenKeySelector = async () => {
     if (window.aistudio && typeof window.aistudio.openSelectKey === 'function') {
       await window.aistudio.openSelectKey();
-      // 선택 후 바로 반영되도록 상태 변경 (레이스 컨디션 방지 위해 즉시 닫음 가정)
-      setNeedsKey(false);
-      // 채팅 세션 초기화 (새 키 적용 위함)
-      chatRef.current = null;
+    } else {
+      // Vercel 환경 등 외부에서는 환경변수 설정 안내
+      setErrorStatus('key_missing');
     }
-  };
-
-  const initializeChat = () => {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
-    chatRef.current = ai.chats.create({
-      model: 'gemini-3-flash-preview',
-      config: {
-        systemInstruction: systemInstruction,
-      },
-    });
   };
 
   const handleSend = async () => {
     if (!input.trim() || isTyping) return;
 
-    // 전송 전 다시 한 번 체크
-    const hasKey = await checkApiKeyStatus();
-    if (!hasKey) {
-      setMessages(prev => [...prev, { role: 'model', text: '죄송합니다. 상담을 시작하려면 먼저 결제 수단이 등록된 API 키를 선택해주셔야 합니다.' }]);
-      return;
-    }
-
     const userMessage = input.trim();
+    const currentHistory = [...messages];
+    
     setInput('');
     setMessages(prev => [...prev, { role: 'user', text: userMessage }]);
     setIsTyping(true);
+    setErrorStatus('none');
 
     try {
-      if (!chatRef.current) {
-        initializeChat();
+      const apiKey = process.env.API_KEY;
+      
+      if (!apiKey) {
+        throw new Error("API_KEY_MISSING");
       }
 
-      const responseStream = await chatRef.current!.sendMessageStream({ message: userMessage });
+      const ai = new GoogleGenAI({ apiKey });
+      
+      // 첫 환영 메시지를 제외하고 히스토리 구성
+      const chatHistory = currentHistory.slice(1).map(m => ({
+        role: m.role,
+        parts: [{ text: m.text }]
+      }));
+
+      const chat = ai.chats.create({
+        model: 'gemini-3-flash-preview',
+        config: {
+          systemInstruction: systemInstruction,
+        },
+        history: chatHistory
+      });
+
+      const responseStream = await chat.sendMessageStream({ message: userMessage });
       
       let fullResponse = '';
       setMessages(prev => [...prev, { role: 'model', text: '' }]);
@@ -130,19 +99,20 @@ const AIChatWidget: React.FC = () => {
         }
       }
     } catch (error: any) {
-      console.error("AI Chat Error:", error);
+      console.error("AI Chat Error Detail:", error);
       
-      // 오류 발생 시 키 상태 재확인
-      const stillHasKey = await checkApiKeyStatus();
-      
-      if (!stillHasKey || error.message?.includes("404") || error.message?.includes("not found")) {
+      if (error.message === "API_KEY_MISSING") {
+        setErrorStatus('key_missing');
         setMessages(prev => [...prev, { 
           role: 'model', 
-          text: 'API 키가 유효하지 않거나 설정되지 않았습니다. 상단의 열쇠 아이콘을 눌러 결제 정보가 포함된 프로젝트의 키를 다시 선택해 주세요.' 
+          text: 'API 키가 설정되지 않았습니다. Vercel 환경 변수에 API_KEY를 등록하시거나, 상단의 열쇠 아이콘을 클릭해 주세요.' 
         }]);
-        setNeedsKey(true);
       } else {
-        setMessages(prev => [...prev, { role: 'model', text: '죄송합니다. 일시적인 통신 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.' }]);
+        setErrorStatus('api_error');
+        setMessages(prev => [...prev, { 
+          role: 'model', 
+          text: '죄송합니다. 서비스와 통신하는 중 오류가 발생했습니다. Vercel 설정에서 API 키가 올바른지 다시 한번 확인해 주세요.' 
+        }]);
       }
     } finally {
       setIsTyping(false);
@@ -151,31 +121,27 @@ const AIChatWidget: React.FC = () => {
 
   return (
     <div className="fixed bottom-6 right-6 z-[100] flex flex-col items-end">
-      {/* Chat Window */}
       {isOpen && (
         <div className="mb-4 w-[360px] md:w-[400px] h-[550px] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-slate-200 animate-in slide-in-from-bottom-4 duration-300">
           {/* Header */}
-          <div className="bg-[#1e3a5f] p-4 text-white flex items-center justify-between">
+          <div className="bg-[#1e3a5f] p-4 text-white flex items-center justify-between shadow-md">
             <div className="flex items-center gap-3">
-              <div className="relative">
-                <div className="w-10 h-10 bg-slate-700 rounded-full flex items-center justify-center border border-white/20">
-                  <Bot size={24} />
-                </div>
-                <div className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-[#1e3a5f] rounded-full"></div>
+              <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center border border-white/20">
+                <Bot size={22} />
               </div>
               <div>
                 <h3 className="font-bold text-sm">백승룡 AI 어시스턴트</h3>
-                <p className="text-[10px] text-slate-300 flex items-center gap-1">
-                  <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${needsKey ? 'bg-amber-500' : 'bg-emerald-500'}`}></span>
-                  {needsKey ? 'API 설정 필요' : '상담 가능'}
-                </p>
+                <div className="flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
+                  <p className="text-[10px] text-slate-300 uppercase tracking-tighter">Strategic Consultant</p>
+                </div>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
               <button 
                 onClick={handleOpenKeySelector}
                 title="API 키 설정"
-                className={`p-2 rounded-full transition-colors ${needsKey ? 'bg-amber-500/20 text-amber-400 hover:bg-amber-500/30' : 'hover:bg-white/10'}`}
+                className="p-2 hover:bg-white/10 rounded-full transition-colors text-white/70 hover:text-white"
               >
                 <Key size={18} />
               </button>
@@ -188,17 +154,14 @@ const AIChatWidget: React.FC = () => {
             </div>
           </div>
 
-          {/* Body */}
-          <div 
-            ref={scrollRef}
-            className="flex-grow overflow-y-auto p-4 space-y-4 bg-slate-50"
-          >
+          {/* Messages */}
+          <div ref={scrollRef} className="flex-grow overflow-y-auto p-4 space-y-4 bg-slate-50">
             {messages.map((msg, idx) => (
               <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[85%] p-3 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap ${
+                <div className={`max-w-[85%] p-3.5 rounded-2xl text-[13px] leading-relaxed shadow-sm ${
                   msg.role === 'user' 
-                    ? 'bg-[#1e3a5f] text-white rounded-tr-none shadow-sm' 
-                    : 'bg-white text-slate-800 border border-slate-200 rounded-tl-none shadow-sm'
+                    ? 'bg-[#1e3a5f] text-white rounded-tr-none' 
+                    : 'bg-white text-slate-800 border border-slate-200 rounded-tl-none'
                 }`}>
                   {msg.text}
                 </div>
@@ -207,38 +170,31 @@ const AIChatWidget: React.FC = () => {
             {isTyping && (
               <div className="flex justify-start">
                 <div className="bg-white border border-slate-200 p-3 rounded-2xl rounded-tl-none shadow-sm">
-                  <Loader2 size={16} className="animate-spin text-slate-400" />
+                  <div className="flex gap-1">
+                    <span className="w-1.5 h-1.5 bg-slate-300 rounded-full animate-bounce"></span>
+                    <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce [animation-delay:0.2s]"></span>
+                    <span className="w-1.5 h-1.5 bg-slate-300 rounded-full animate-bounce [animation-delay:0.4s]"></span>
+                  </div>
                 </div>
               </div>
             )}
-            {needsKey && (
-              <div className="flex flex-col items-center gap-4 p-6 bg-white border border-dashed border-amber-300 rounded-xl text-center shadow-inner animate-in fade-in zoom-in-95 duration-300">
-                <div className="w-12 h-12 bg-amber-50 rounded-full flex items-center justify-center">
-                  <Key size={24} className="text-amber-600" />
+            
+            {/* Error Guidance */}
+            {errorStatus !== 'none' && (
+              <div className="mx-2 p-4 bg-amber-50 border border-amber-200 rounded-xl text-amber-800">
+                <div className="flex items-center gap-2 mb-2">
+                  <AlertCircle size={18} className="text-amber-600" />
+                  <span className="text-xs font-bold uppercase tracking-wider">Vercel 배포 가이드</span>
                 </div>
-                <div className="space-y-1">
-                  <p className="text-sm font-bold text-slate-800">
-                    API 키 설정이 필요합니다.
-                  </p>
-                  <p className="text-[11px] text-slate-500 leading-relaxed">
-                    상단의 <b>열쇠 아이콘</b>을 누르거나<br/>아래 버튼을 클릭하여 결제 정보가 포함된<br/>프로젝트의 API 키를 선택해 주세요.
-                  </p>
-                </div>
+                <p className="text-[11px] leading-relaxed mb-3">
+                  현재 통신 오류가 발생했습니다. Vercel Dashboard의 **Settings → Environment Variables** 메뉴에서 `API_KEY`를 정상적으로 등록하셨는지 확인해 주세요.
+                </p>
                 <button 
                   onClick={handleOpenKeySelector}
-                  className="bg-amber-500 text-white px-6 py-2 rounded-full text-xs font-bold shadow-lg hover:bg-amber-600 transition-all flex items-center gap-2"
+                  className="w-full py-2 bg-amber-100 hover:bg-amber-200 rounded-lg text-[10px] font-bold transition-colors"
                 >
-                  <Key size={14} />
-                  API 키 선택하기
+                  API 키 재설정 시도하기
                 </button>
-                <a 
-                  href="https://ai.google.dev/gemini-api/docs/billing" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-[10px] text-slate-400 underline decoration-slate-300"
-                >
-                  구글 API 결제 등록 안내
-                </a>
               </div>
             )}
           </div>
@@ -251,44 +207,38 @@ const AIChatWidget: React.FC = () => {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                disabled={isTyping}
-                placeholder={needsKey ? "키 설정을 먼저 완료해주세요" : "상담 내용을 입력하세요..."}
-                className="w-full bg-slate-100 border-none rounded-full py-3 pl-4 pr-12 text-sm focus:ring-2 focus:ring-[#1e3a5f] transition-all outline-none disabled:opacity-50"
+                placeholder="상담 내용을 입력하세요..."
+                className="w-full bg-slate-100 border-none rounded-full py-3.5 pl-5 pr-12 text-sm focus:ring-2 focus:ring-[#1e3a5f]/20 transition-all outline-none"
               />
               <button 
                 onClick={handleSend}
                 disabled={!input.trim() || isTyping}
-                className={`absolute right-1 p-2 rounded-full transition-all ${
-                  input.trim() && !isTyping ? 'text-[#1e3a5f] hover:bg-slate-200' : 'text-slate-300'
+                className={`absolute right-1.5 p-2.5 rounded-full transition-all ${
+                  input.trim() && !isTyping ? 'bg-[#1e3a5f] text-white shadow-lg' : 'text-slate-300'
                 }`}
               >
-                <Send size={20} />
+                <Send size={18} />
               </button>
             </div>
-            <p className="text-[10px] text-center text-slate-400 mt-3">
-              AI 기술을 통해 생성된 정보입니다.
-            </p>
+            <div className="mt-3 flex items-center justify-center gap-1.5 text-slate-400">
+              <Info size={10} />
+              <p className="text-[9px] uppercase tracking-widest font-medium">Powerered by Google Gemini 3</p>
+            </div>
           </div>
         </div>
       )}
 
-      {/* Floating Action Button */}
+      {/* Launcher Button */}
       <button 
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-14 h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center shadow-2xl transition-all duration-300 group relative ${
-          isOpen ? 'bg-slate-100 text-slate-900 rotate-90' : 'bg-[#1e3a5f] text-white hover:scale-110'
+        className={`w-14 h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center shadow-2xl transition-all duration-300 ${
+          isOpen ? 'bg-white text-slate-900 rotate-90 scale-90' : 'bg-[#1e3a5f] text-white hover:scale-110 active:scale-95'
         }`}
       >
         {isOpen ? <X size={28} /> : (
-          <>
+          <div className="relative">
             <MessageSquare size={28} />
-            <div className={`absolute top-3 right-3 md:top-4 md:right-4 w-3 h-3 rounded-full border-2 border-[#1e3a5f] group-hover:animate-ping ${needsKey ? 'bg-amber-500' : 'bg-emerald-400'}`}></div>
-          </>
-        )}
-        
-        {!isOpen && (
-          <div className="absolute right-full mr-4 whitespace-nowrap bg-white px-4 py-2 rounded-full text-slate-900 font-bold text-sm shadow-xl opacity-0 group-hover:opacity-100 transition-opacity hidden md:block">
-            {needsKey ? 'API 키 설정 필요' : '전문가 AI 상담'}
+            <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-[#1e3a5f] rounded-full"></span>
           </div>
         )}
       </button>
