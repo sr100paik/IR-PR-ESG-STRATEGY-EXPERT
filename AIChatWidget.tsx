@@ -14,7 +14,7 @@ const AIChatWidget: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'model',
-      text: '안녕하십니까. 백승룡 전문가의 AI 어시스턴트입니다. 경영 전략, IR, ESG 실무 등 궁금하신 사항에 대해 전문적인 조언을 드릴 수 있습니다.'
+      text: '안녕하십니까. 백승룡 프로의 AI 어시스턴트입니다. 경영 전략, IR, ESG 실무 등 궁금하신 사항에 대해 전문적인 조언을 드릴 수 있습니다.'
     }
   ]);
   const [isTyping, setIsTyping] = useState(false);
@@ -36,30 +36,35 @@ const AIChatWidget: React.FC = () => {
     setIsTyping(true);
 
     try {
-      // 시스템 가이드에 따라 process.env.API_KEY를 참조하되, 
-      // 브라우저 환경(Vite)의 특성을 고려하여 안전하게 값을 가져옵니다.
+      /**
+       * 환경 변수 접근 해결책:
+       * 1. process.env.API_KEY (Vercel 기본)
+       * 2. import.meta.env.VITE_API_KEY (Vite 브라우저 노출용)
+       * 이 두 가지를 모두 체크하여 가장 확실한 값을 사용합니다.
+       */
       // @ts-ignore
       const apiKey = process.env.API_KEY || (import.meta as any).env?.VITE_API_KEY;
 
       if (!apiKey) {
-        throw new Error("API_KEY_NOT_FOUND");
+        throw new Error("API_KEY_MISSING");
       }
 
       const ai = new GoogleGenAI({ apiKey });
       
-      // 더 안정적인 'gemini-flash-latest' 모델 사용
+      // 시스템 가이드라인에 최적화된 모델 사용
       const chat = ai.chats.create({
-        model: 'gemini-flash-latest',
+        model: 'gemini-3-flash-preview',
         config: {
           systemInstruction: `
-            당신은 '백승룡(Daniel SR, Paik)' 전문가의 AI 상담 어시스턴트입니다. 
-            30년의 경영전략, VC 투자심사, 상장사 IR/PR/ESG 실무 경력을 바탕으로 답변하십시오.
+            당신은 '백승룡(Daniel SR, Paik) 프로'의 AI 상담 어시스턴트입니다. 
+            30년의 경영전략, VC 투자심사, 상장사 IR/PR/ESG 실무 경력을 보유한 백승룡 프로의 전문성을 대변하십시오.
 
-            [답변 규칙]
-            1. 격조 있고 정중한 비즈니스 경어체를 사용하십시오.
-            2. 마크다운 기호(별표, 샵 등)를 절대 사용하지 말고 순수 텍스트로만 답변하십시오.
-            3. "50억 투자 유치 성공", "22년 CEO 경력", "LS그룹 계열사 경영" 등 구체적 성과를 자연스럽게 언급하여 전문성을 보여주십시오.
-            4. 답변 마지막에는 "보다 심도 있는 상담은 상단 Contact 메뉴를 통해 요청하실 수 있습니다."를 추가하십시오.
+            [핵심 페르소나 및 호칭 규칙]
+            - 백승룡 전문가를 지칭할 때는 반드시 "백승룡 프로" 또는 "백 프로"라고 칭하십시오.
+            - 정중하고 격조 있는 비즈니스 경어체를 사용하십시오.
+            - 마크다운(별표, 샵 등)을 사용하지 말고 깔끔한 텍스트로만 구성하십시오.
+            - "50억 투자 유치", "22년 CEO 경력", "LS그룹 계열사 경영" 등 실제 성과를 자연스럽게 언급하십시오.
+            - 마지막에는 항상 "상세한 상담은 Contact 메뉴를 통해 요청하실 수 있습니다."를 덧붙이십시오.
           `,
           temperature: 0.7,
         },
@@ -86,16 +91,16 @@ const AIChatWidget: React.FC = () => {
         }
       }
     } catch (error: any) {
-      console.error("Gemini API Connection Failed:", error);
-      let errorMsg = '죄송합니다. 현재 서비스 연결이 원활하지 않습니다.';
+      console.error("Connection Error:", error);
+      let errorDisplay = '서비스 연결이 원활하지 않습니다.';
       
-      if (error.message === "API_KEY_NOT_FOUND") {
-        errorMsg = '환경 변수 설정이 아직 프로젝트에 반영되지 않았습니다. Vercel 배포 설정을 다시 확인해 주시기 바랍니다.';
+      if (error.message === "API_KEY_MISSING") {
+        errorDisplay = 'API 키 설정을 읽어오지 못했습니다. Vercel 배포 시 VITE_API_KEY가 포함되었는지 확인이 필요합니다.';
       }
 
       setMessages(prev => [...prev, { 
         role: 'model', 
-        text: errorMsg + ' 잠시 후 다시 시도해 주시거나 Contact 메뉴를 이용해 주세요.'
+        text: `죄송합니다. ${errorDisplay} 잠시 후 다시 시도해 주시기 바랍니다.`
       }]);
     } finally {
       setIsTyping(false);
@@ -106,7 +111,6 @@ const AIChatWidget: React.FC = () => {
     <div className="fixed bottom-6 right-6 z-[100] flex flex-col items-end">
       {isOpen && (
         <div className="mb-4 w-[350px] md:w-[400px] h-[580px] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-slate-200 animate-in slide-in-from-bottom-5 duration-300">
-          {/* Header */}
           <div className="bg-[#0f172a] p-5 text-white flex items-center justify-between shadow-lg">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center border border-white/10 shadow-inner">
@@ -116,7 +120,7 @@ const AIChatWidget: React.FC = () => {
                 <h3 className="font-bold text-[15px] tracking-tight">백승룡 AI 어시스턴트</h3>
                 <div className="flex items-center gap-1.5 mt-0.5">
                   <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
-                  <span className="text-[10px] text-slate-400 uppercase font-bold tracking-widest">Active Consulting</span>
+                  <span className="text-[10px] text-slate-400 uppercase font-bold tracking-widest">Consulting Online</span>
                 </div>
               </div>
             </div>
@@ -125,7 +129,6 @@ const AIChatWidget: React.FC = () => {
             </button>
           </div>
 
-          {/* Messages */}
           <div ref={scrollRef} className="flex-grow overflow-y-auto p-5 space-y-5 bg-[#f8fafc]">
             {messages.map((msg, idx) => (
               <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
@@ -149,7 +152,6 @@ const AIChatWidget: React.FC = () => {
             )}
           </div>
 
-          {/* Input */}
           <div className="p-5 bg-white border-t border-slate-100">
             <div className="relative flex items-center">
               <input 
@@ -172,13 +174,12 @@ const AIChatWidget: React.FC = () => {
             </div>
             <div className="mt-4 flex items-center justify-center gap-1.5">
               <Info size={11} className="text-slate-400" />
-              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">Strategic Insights by Gemini AI</p>
+              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">Powered by Gemini AI Technology</p>
             </div>
           </div>
         </div>
       )}
 
-      {/* Button */}
       <button 
         onClick={() => setIsOpen(!isOpen)}
         className={`w-14 h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center shadow-2xl transition-all duration-300 transform active:scale-95 ${
