@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageSquare, X, Send, Bot, Loader2, Key } from 'lucide-react';
+import { MessageSquare, X, Send, Bot, Loader2, Key, Settings } from 'lucide-react';
 import { GoogleGenAI, Chat } from "@google/genai";
 
 type Message = {
@@ -45,23 +45,14 @@ const AIChatWidget: React.FC = () => {
     - 백승룡 전문가가 직접 답변하는 것이 아니라, '어시스턴트'로서 정보를 제공하는 형식입니다.
   `;
 
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  }, [messages, isTyping]);
-
-  // API 키 선택 확인
-  const checkApiKey = async () => {
+  // API 키 선택 확인 함수
+  const checkApiKeyStatus = async () => {
     try {
       if (window.aistudio && typeof window.aistudio.hasSelectedApiKey === 'function') {
         const hasKey = await window.aistudio.hasSelectedApiKey();
-        if (!hasKey) {
-          setNeedsKey(true);
-          return false;
-        }
+        setNeedsKey(!hasKey);
+        return hasKey;
       }
-      setNeedsKey(false);
       return true;
     } catch (e) {
       console.error("API Key check error", e);
@@ -69,10 +60,26 @@ const AIChatWidget: React.FC = () => {
     }
   };
 
+  // 채팅창 열릴 때마다 키 상태 체크
+  useEffect(() => {
+    if (isOpen) {
+      checkApiKeyStatus();
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages, isTyping, needsKey]);
+
   const handleOpenKeySelector = async () => {
     if (window.aistudio && typeof window.aistudio.openSelectKey === 'function') {
       await window.aistudio.openSelectKey();
+      // 선택 후 바로 반영되도록 상태 변경 (레이스 컨디션 방지 위해 즉시 닫음 가정)
       setNeedsKey(false);
+      // 채팅 세션 초기화 (새 키 적용 위함)
+      chatRef.current = null;
     }
   };
 
@@ -89,8 +96,12 @@ const AIChatWidget: React.FC = () => {
   const handleSend = async () => {
     if (!input.trim() || isTyping) return;
 
-    const hasKey = await checkApiKey();
-    if (!hasKey) return;
+    // 전송 전 다시 한 번 체크
+    const hasKey = await checkApiKeyStatus();
+    if (!hasKey) {
+      setMessages(prev => [...prev, { role: 'model', text: '죄송합니다. 상담을 시작하려면 먼저 결제 수단이 등록된 API 키를 선택해주셔야 합니다.' }]);
+      return;
+    }
 
     const userMessage = input.trim();
     setInput('');
@@ -121,10 +132,13 @@ const AIChatWidget: React.FC = () => {
     } catch (error: any) {
       console.error("AI Chat Error:", error);
       
-      if (error.message?.includes("Requested entity was not found") || error.message?.includes("404")) {
+      // 오류 발생 시 키 상태 재확인
+      const stillHasKey = await checkApiKeyStatus();
+      
+      if (!stillHasKey || error.message?.includes("404") || error.message?.includes("not found")) {
         setMessages(prev => [...prev, { 
           role: 'model', 
-          text: '죄송합니다. 서비스 이용을 위해 API 키 설정이 필요합니다. 결제 수단이 등록된 구글 클라우드 프로젝트의 API 키를 선택해 주세요.' 
+          text: 'API 키가 유효하지 않거나 설정되지 않았습니다. 상단의 열쇠 아이콘을 눌러 결제 정보가 포함된 프로젝트의 키를 다시 선택해 주세요.' 
         }]);
         setNeedsKey(true);
       } else {
@@ -152,17 +166,26 @@ const AIChatWidget: React.FC = () => {
               <div>
                 <h3 className="font-bold text-sm">백승룡 AI 어시스턴트</h3>
                 <p className="text-[10px] text-slate-300 flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
-                  상담 대기 중
+                  <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${needsKey ? 'bg-amber-500' : 'bg-emerald-500'}`}></span>
+                  {needsKey ? 'API 설정 필요' : '상담 가능'}
                 </p>
               </div>
             </div>
-            <button 
-              onClick={() => setIsOpen(false)}
-              className="p-1 hover:bg-white/10 rounded-full transition-colors"
-            >
-              <X size={20} />
-            </button>
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={handleOpenKeySelector}
+                title="API 키 설정"
+                className={`p-2 rounded-full transition-colors ${needsKey ? 'bg-amber-500/20 text-amber-400 hover:bg-amber-500/30' : 'hover:bg-white/10'}`}
+              >
+                <Key size={18} />
+              </button>
+              <button 
+                onClick={() => setIsOpen(false)}
+                className="p-2 hover:bg-white/10 rounded-full transition-colors"
+              >
+                <X size={18} />
+              </button>
+            </div>
           </div>
 
           {/* Body */}
@@ -189,24 +212,32 @@ const AIChatWidget: React.FC = () => {
               </div>
             )}
             {needsKey && (
-              <div className="flex flex-col items-center gap-4 p-6 bg-white border border-dashed border-slate-300 rounded-xl text-center">
-                <Key size={32} className="text-[#1e3a5f] mb-2" />
-                <p className="text-sm text-slate-600">
-                  서비스 이용을 위해<br/><b>결제 수단이 등록된</b> 구글 API 키가 필요합니다.
-                </p>
+              <div className="flex flex-col items-center gap-4 p-6 bg-white border border-dashed border-amber-300 rounded-xl text-center shadow-inner animate-in fade-in zoom-in-95 duration-300">
+                <div className="w-12 h-12 bg-amber-50 rounded-full flex items-center justify-center">
+                  <Key size={24} className="text-amber-600" />
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm font-bold text-slate-800">
+                    API 키 설정이 필요합니다.
+                  </p>
+                  <p className="text-[11px] text-slate-500 leading-relaxed">
+                    상단의 <b>열쇠 아이콘</b>을 누르거나<br/>아래 버튼을 클릭하여 결제 정보가 포함된<br/>프로젝트의 API 키를 선택해 주세요.
+                  </p>
+                </div>
                 <button 
                   onClick={handleOpenKeySelector}
-                  className="bg-[#1e3a5f] text-white px-6 py-2.5 rounded-full text-sm font-bold shadow-lg hover:bg-slate-800 transition-all"
+                  className="bg-amber-500 text-white px-6 py-2 rounded-full text-xs font-bold shadow-lg hover:bg-amber-600 transition-all flex items-center gap-2"
                 >
+                  <Key size={14} />
                   API 키 선택하기
                 </button>
                 <a 
                   href="https://ai.google.dev/gemini-api/docs/billing" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="text-xs text-slate-400 underline"
+                  className="text-[10px] text-slate-400 underline decoration-slate-300"
                 >
-                  결제 등록 안내 보기
+                  구글 API 결제 등록 안내
                 </a>
               </div>
             )}
@@ -220,15 +251,15 @@ const AIChatWidget: React.FC = () => {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                disabled={needsKey}
-                placeholder={needsKey ? "API 키를 먼저 설정해주세요" : "상담 내용을 입력하세요..."}
+                disabled={isTyping}
+                placeholder={needsKey ? "키 설정을 먼저 완료해주세요" : "상담 내용을 입력하세요..."}
                 className="w-full bg-slate-100 border-none rounded-full py-3 pl-4 pr-12 text-sm focus:ring-2 focus:ring-[#1e3a5f] transition-all outline-none disabled:opacity-50"
               />
               <button 
                 onClick={handleSend}
-                disabled={!input.trim() || isTyping || needsKey}
+                disabled={!input.trim() || isTyping}
                 className={`absolute right-1 p-2 rounded-full transition-all ${
-                  input.trim() && !isTyping && !needsKey ? 'text-[#1e3a5f] hover:bg-slate-200' : 'text-slate-300'
+                  input.trim() && !isTyping ? 'text-[#1e3a5f] hover:bg-slate-200' : 'text-slate-300'
                 }`}
               >
                 <Send size={20} />
@@ -251,13 +282,13 @@ const AIChatWidget: React.FC = () => {
         {isOpen ? <X size={28} /> : (
           <>
             <MessageSquare size={28} />
-            <div className="absolute top-3 right-3 md:top-4 md:right-4 w-3 h-3 bg-amber-500 rounded-full border-2 border-[#1e3a5f] group-hover:animate-ping"></div>
+            <div className={`absolute top-3 right-3 md:top-4 md:right-4 w-3 h-3 rounded-full border-2 border-[#1e3a5f] group-hover:animate-ping ${needsKey ? 'bg-amber-500' : 'bg-emerald-400'}`}></div>
           </>
         )}
         
         {!isOpen && (
           <div className="absolute right-full mr-4 whitespace-nowrap bg-white px-4 py-2 rounded-full text-slate-900 font-bold text-sm shadow-xl opacity-0 group-hover:opacity-100 transition-opacity hidden md:block">
-            전문가 AI 상담
+            {needsKey ? 'API 키 설정 필요' : '전문가 AI 상담'}
           </div>
         )}
       </button>
