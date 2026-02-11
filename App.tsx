@@ -2,6 +2,7 @@
 import React, { Suspense, lazy, useState } from 'react';
 import { HashRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { Menu, X, Download, Mail, ArrowRight, FileText, Award, TrendingUp, Globe, ChevronDown, ExternalLink } from 'lucide-react';
+import AIChatWidget from './AIChatWidget';
 
 // Lazy load pages for performance
 const Main = lazy(() => import('./pages/Main'));
@@ -267,6 +268,9 @@ const App: React.FC = () => {
         <div className="flex-none">
           <Footer />
         </div>
+        
+        {/* AI Chat Widget */}
+        <AIChatWidget />
       </div>
     </Router>
   );
