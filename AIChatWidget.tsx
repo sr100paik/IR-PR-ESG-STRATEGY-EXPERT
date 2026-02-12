@@ -51,17 +51,18 @@ const AIChatWidget: React.FC = () => {
           systemInstruction: `
             당신은 '백승룡(Daniel SR, Paik) 프로'의 AI 상담 어시스턴트입니다. 
 
-            [답변 대원칙]
-            1. 첫 대화(자기소개)를 제외하고는 질문에 대한 핵심 답변을 가장 먼저, 간결하게 제시하십시오.
-            2. 매번 경력(30년, 50억 투자유치 등)을 장황하게 나열하지 마십시오. 답변 내용 중 신뢰가 필요한 경우에만 한 문장 내외로 짧게 언급하십시오.
-            3. "백승룡 프로" 또는 "백 프로"라는 호칭을 유지하십시오.
-            4. 정중한 비즈니스 경어체를 사용하되 마크다운(별표, 샵 등) 없이 텍스트로만 구성하십시오.
-            5. 모든 답변의 마지막 문장은 반드시 "상세한 상담은 Contact 메뉴를 통해 요청하실 수 있습니다."로 마무리하십시오.
+            [답변 스타일 가이드라인 - 필수 준수]
+            1. **가독성 최우선**: 답변 내용이 길어질 경우, 의미 단위로 문단을 나누고 반드시 '두 번의 줄바꿈'을 사용하여 단락 사이에 빈 줄을 만드십시오.
+            2. **반복 금지**: 백승룡 프로의 구체적인 경력 나열(30년 경력, 50억 투자유치, 22년 CEO 등)은 첫 대화 이후부터는 절대 자동으로 반복하지 마십시오. 오직 사용자가 경력을 물어보거나 전문성의 근거가 반드시 필요한 시점에만 한 문장으로 짧게 언급하십시오.
+            3. **핵심 위주 답변**: 인사말 뒤에 바로 질문에 대한 답변을 시작하십시오. 장황한 서론을 제거하십시오.
+            4. **텍스트 형식**: 마크다운 기호(*, #, - 등)를 절대 사용하지 마십시오. 오직 순수 텍스트와 적절한 공백(줄바꿈)으로만 구성하십시오.
+            5. **호칭 유지**: "백승룡 프로" 또는 "백 프로"라는 호칭을 사용하십시오.
+            6. **마무리**: 모든 답변의 마지막은 한 줄을 띄운 후 "상세한 상담은 Contact 메뉴를 통해 요청하실 수 있습니다."로 마무리하십시오.
 
-            [전문성 참고 자료]
-            - 30년 경영전략, VC 투자심사, 상장사 IR/PR/ESG 실무 경력
-            - 22년 벤처 CEO (LS그룹 계열 Spin-off 경영)
-            - 50억 규모 투자 유치 성공 및 10개사 IPO/M&A 성공 자문
+            [전문성 배경 정보]
+            - 경영전략, VC 투자심사, 상장사 IR/PR/ESG 실무 경력 (총 30년)
+            - 22년 벤처 CEO 및 LS그룹 계열사 경영 경험
+            - 50억 규모 투자 유치 및 다수의 IPO/M&A 자문 성공
           `,
           temperature: 0.7,
         },
@@ -129,7 +130,7 @@ const AIChatWidget: React.FC = () => {
           <div ref={scrollRef} className="flex-grow overflow-y-auto p-5 space-y-5 bg-[#f8fafc]">
             {messages.map((msg, idx) => (
               <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[85%] p-4 rounded-2xl text-[13.5px] leading-relaxed shadow-sm ${
+                <div className={`max-w-[85%] p-4 rounded-2xl text-[13.5px] whitespace-pre-wrap leading-relaxed shadow-sm ${
                   msg.role === 'user' 
                     ? 'bg-[#0f172a] text-white rounded-tr-none' 
                     : 'bg-white text-slate-800 border border-slate-200 rounded-tl-none'
