@@ -149,7 +149,8 @@ const Footer = () => {
           <div className="md:col-span-2">
             <h2 className="serif text-white text-2xl font-bold mb-4">백승룡 (Daniel SR, Paik)</h2>
             <p className="max-w-2xl text-slate-400 leading-relaxed mb-6">
-              KOSDAQ 상장사 실무와 20년 이상의 벤처기업 CEO 경력을 보유한 전략가. 기업 가치 제고와 지속가능한 성장을 위한 최상의 파트너십을 제공합니다.
+              KOSDAQ 상장사 실무와 20년 이상의 벤처기업 CEO 경력을 보유한 전략가.<br />
+              기업 가치 제고와 지속가능한 성장을 위한 최상의 파트너십을 제공합니다.
             </p>
             
             {/* Quick Stats */}
