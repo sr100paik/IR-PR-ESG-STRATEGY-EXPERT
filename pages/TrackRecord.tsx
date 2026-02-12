@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Calendar, CheckCircle2, Award, Zap, TrendingUp, DollarSign, Building2, Globe, Users, Target } from 'lucide-react';
 
@@ -63,7 +64,7 @@ const TrackRecord: React.FC = () => {
         <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <h1 className="serif text-4xl md:text-5xl font-bold mb-6">Track Record</h1>
           <p className="text-slate-300 max-w-2xl text-lg leading-relaxed">
-            30년의 실무 경력과 20년의 경영 경험이 응축된 결과입니다. 
+            30년의 실무 경력과 20년의 경영 경험이 응축된 결과입니다.<br />
             상장사 실무와 벤처 투자의 정점에서 쌓아온 독보적인 레퍼런스를 확인하십시오.
           </p>
         </div>
