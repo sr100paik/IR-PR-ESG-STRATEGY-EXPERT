@@ -36,12 +36,6 @@ const AIChatWidget: React.FC = () => {
     setIsTyping(true);
 
     try {
-      /**
-       * 환경 변수 접근 해결책:
-       * 1. process.env.API_KEY (Vercel 기본)
-       * 2. import.meta.env.VITE_API_KEY (Vite 브라우저 노출용)
-       * 이 두 가지를 모두 체크하여 가장 확실한 값을 사용합니다.
-       */
       // @ts-ignore
       const apiKey = process.env.API_KEY || (import.meta as any).env?.VITE_API_KEY;
 
@@ -51,20 +45,23 @@ const AIChatWidget: React.FC = () => {
 
       const ai = new GoogleGenAI({ apiKey });
       
-      // 시스템 가이드라인에 최적화된 모델 사용
       const chat = ai.chats.create({
         model: 'gemini-3-flash-preview',
         config: {
           systemInstruction: `
             당신은 '백승룡(Daniel SR, Paik) 프로'의 AI 상담 어시스턴트입니다. 
-            30년의 경영전략, VC 투자심사, 상장사 IR/PR/ESG 실무 경력을 보유한 백승룡 프로의 전문성을 대변하십시오.
 
-            [핵심 페르소나 및 호칭 규칙]
-            - 백승룡 전문가를 지칭할 때는 반드시 "백승룡 프로" 또는 "백 프로"라고 칭하십시오.
-            - 정중하고 격조 있는 비즈니스 경어체를 사용하십시오.
-            - 마크다운(별표, 샵 등)을 사용하지 말고 깔끔한 텍스트로만 구성하십시오.
-            - "50억 투자 유치", "22년 CEO 경력", "LS그룹 계열사 경영" 등 실제 성과를 자연스럽게 언급하십시오.
-            - 마지막에는 항상 "상세한 상담은 Contact 메뉴를 통해 요청하실 수 있습니다."를 덧붙이십시오.
+            [답변 대원칙]
+            1. 첫 대화(자기소개)를 제외하고는 질문에 대한 핵심 답변을 가장 먼저, 간결하게 제시하십시오.
+            2. 매번 경력(30년, 50억 투자유치 등)을 장황하게 나열하지 마십시오. 답변 내용 중 신뢰가 필요한 경우에만 한 문장 내외로 짧게 언급하십시오.
+            3. "백승룡 프로" 또는 "백 프로"라는 호칭을 유지하십시오.
+            4. 정중한 비즈니스 경어체를 사용하되 마크다운(별표, 샵 등) 없이 텍스트로만 구성하십시오.
+            5. 모든 답변의 마지막 문장은 반드시 "상세한 상담은 Contact 메뉴를 통해 요청하실 수 있습니다."로 마무리하십시오.
+
+            [전문성 참고 자료]
+            - 30년 경영전략, VC 투자심사, 상장사 IR/PR/ESG 실무 경력
+            - 22년 벤처 CEO (LS그룹 계열 Spin-off 경영)
+            - 50억 규모 투자 유치 성공 및 10개사 IPO/M&A 성공 자문
           `,
           temperature: 0.7,
         },
@@ -95,7 +92,7 @@ const AIChatWidget: React.FC = () => {
       let errorDisplay = '서비스 연결이 원활하지 않습니다.';
       
       if (error.message === "API_KEY_MISSING") {
-        errorDisplay = 'API 키 설정을 읽어오지 못했습니다. Vercel 배포 시 VITE_API_KEY가 포함되었는지 확인이 필요합니다.';
+        errorDisplay = 'API 키 설정을 읽어오지 못했습니다.';
       }
 
       setMessages(prev => [...prev, { 
