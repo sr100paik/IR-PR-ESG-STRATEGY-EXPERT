@@ -192,7 +192,7 @@ const Footer = () => {
                   <span className="text-sm">sr100@kakao.com</span>
                 </a>
                 <a 
-                  href="https://foj9p10hxsmxhnzm.public.blob.vercel-storage.com/Daniel_SR_Paik_CV.pdf" 
+                  href="https://foj9p10hxsmxhnzm.public.blob.vercel-storage.com/CV_PSR_v2.pdf" 
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center space-x-2 text-sm text-slate-400 hover:text-white transition-colors"

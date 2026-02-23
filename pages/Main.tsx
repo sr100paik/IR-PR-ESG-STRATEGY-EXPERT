@@ -24,7 +24,7 @@ const Main: React.FC = () => {
             </span>
             {/* 모바일 폰트 크기 미세 조정 (text-[32px] md:text-6xl) */}
             <h1 className="serif text-[32px] md:text-6xl font-bold leading-tight mb-6 md:mb-8">
-              투자와 경영의 경계를 허무는 30년,<br />
+              투자와 경영의 경계를 허무는 <span className="font-sans">30년</span>,<br />
               <span className="text-blue-400">실전 전략가</span> 백승룡입니다.
             </h1>
             <div className="bg-white/5 backdrop-blur-sm border-l-2 border-blue-400 p-5 md:p-6 mb-8 md:mb-10">
