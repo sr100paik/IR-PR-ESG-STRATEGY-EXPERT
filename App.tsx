@@ -112,10 +112,10 @@ const Footer = () => {
   // 파트너 리스트 순서, 항목 명칭 및 URL 설정
   const familySites = [
     { name: '파트너 선택', url: '' },
-    { name: '백프로 인사이트 파트너', url: 'https://bizfromatoz.com' },
-    { name: 'Pro OH 컨설팅 파트너', url: 'https://proventure.kr' },
-    { name: '법률 서비스 파트너', url: 'https://naver.me/FFaXQdMu' },
-    { name: '세무회계 서비스 파트너', url: '#' },
+    { name: '경영전략 서비스 파트너', url: 'https://bizfromatoz.com' },
+    { name: '벤처자문 서비스 파트너', url: 'https://proventure.kr' },
+    { name: '법률자문 서비스 파트너', url: 'https://naver.me/FFaXQdMu' },
+    { name: '재무자문 서비스 파트너', url: 'https://park-hum-seok.vercel.app/' },
   ];
 
   // 모든 파트너 항목에 대해 선택 시 즉시 이동하는 핸들러
