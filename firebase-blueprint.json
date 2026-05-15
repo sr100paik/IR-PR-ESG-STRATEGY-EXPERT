@@ -1,0 +1,38 @@
+{
+  "entities": {
+    "GlobalStats": {
+      "title": "Global Visitor Stats",
+      "description": "Stores the total number of visitors to the site.",
+      "type": "object",
+      "properties": {
+        "total": {
+          "type": "number",
+          "description": "Grand total of all unique sessions or page views."
+        }
+      },
+      "required": ["total"]
+    },
+    "DailyStats": {
+      "title": "Daily Visitor Stats",
+      "description": "Stores the number of visitors for a specific date.",
+      "type": "object",
+      "properties": {
+        "count": {
+          "type": "number",
+          "description": "Number of visitors on this specific day."
+        }
+      },
+      "required": ["count"]
+    }
+  },
+  "firestore": {
+    "/siteStats/visitors": {
+      "schema": "GlobalStats",
+      "description": "Stores overall visitor totals."
+    },
+    "/siteStats/visitors/dailyStats/{date}": {
+      "schema": "DailyStats",
+      "description": "Stores counts per day."
+    }
+  }
+}

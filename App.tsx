@@ -3,6 +3,7 @@ import React, { Suspense, lazy, useState } from 'react';
 import { HashRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { Menu, X, Download, Mail, ArrowRight, FileText, Award, TrendingUp, Globe, ChevronDown, ExternalLink } from 'lucide-react';
 import AIChatWidget from './AIChatWidget';
+import VisitorCounter from './VisitorCounter';
 
 // Lazy load pages for performance
 const Main = lazy(() => import('./pages/Main'));
@@ -227,7 +228,11 @@ const Footer = () => {
 
         {/* Bottom Footer */}
         <div className="mt-8 flex flex-col md:flex-row justify-between items-center text-xs text-slate-500 space-y-4 md:space-y-0">
-          <p>© 2024 Paik Seung ryong. All rights reserved.</p>
+          <div className="flex items-center space-x-4">
+            <p>© 2024 Paik Seung ryong. All rights reserved.</p>
+            <div className="h-3 w-px bg-slate-800 hidden md:block"></div>
+            <VisitorCounter />
+          </div>
           <div className="flex space-x-6">
             <Link to="/" className="hover:text-slate-300 transition-colors">Home</Link>
             <Link to="/track-record" className="hover:text-slate-300 transition-colors">Track Record</Link>

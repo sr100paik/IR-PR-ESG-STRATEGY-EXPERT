@@ -1,0 +1,52 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Global site stats
+    match /siteStats/visitors {
+      allow get: if true;
+      
+      // Allow atomic increments
+      allow update: if (
+        request.resource.data.keys().hasAll(['total']) &&
+        request.resource.data.keys().size() == 1 &&
+        request.resource.data.total is number &&
+        request.resource.data.total == resource.data.total + 1
+      );
+      
+      // Initial creation (if needed)
+      allow create: if (
+        request.resource.data.keys().hasAll(['total']) &&
+        request.resource.data.keys().size() == 1 &&
+        request.resource.data.total == 1
+      );
+    }
+
+    // Daily stats subcollection
+    match /siteStats/visitors/dailyStats/{date} {
+      allow get: if true;
+      
+      function isValidDate(d) {
+        return d is string && d.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$');
+      }
+
+      allow create: if (
+        isValidDate(date) &&
+        request.resource.data.keys().hasAll(['count']) &&
+        request.resource.data.keys().size() == 1 &&
+        request.resource.data.count == 1
+      );
+
+      allow update: if (
+        isValidDate(date) &&
+        request.resource.data.keys().hasAll(['count']) &&
+        request.resource.data.keys().size() == 1 &&
+        request.resource.data.count == resource.data.count + 1
+      );
+    }
+  }
+}
