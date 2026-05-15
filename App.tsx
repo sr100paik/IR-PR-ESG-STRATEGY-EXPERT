@@ -113,7 +113,6 @@ const Footer = () => {
   const familySites = [
     { name: '파트너 선택', url: '' },
     { name: '경영전략 서비스 파트너', url: 'https://bizfromatoz.com' },
-    { name: '벤처자문 서비스 파트너', url: 'https://proventure.kr' },
     { name: '법률자문 서비스 파트너', url: 'https://naver.me/FFaXQdMu' },
     { name: '재무자문 서비스 파트너', url: 'https://park-hum-seok.vercel.app/' },
   ];
