@@ -12,8 +12,7 @@ service cloud.firestore {
       
       // Allow atomic increments
       allow update: if (
-        request.resource.data.keys().hasAll(['total']) &&
-        request.resource.data.keys().size() == 1 &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['total']) &&
         request.resource.data.total is number &&
         request.resource.data.total == resource.data.total + 1
       );
@@ -22,7 +21,8 @@ service cloud.firestore {
       allow create: if (
         request.resource.data.keys().hasAll(['total']) &&
         request.resource.data.keys().size() == 1 &&
-        request.resource.data.total == 1
+        request.resource.data.total is number &&
+        request.resource.data.total >= 1
       );
     }
 
@@ -43,8 +43,8 @@ service cloud.firestore {
 
       allow update: if (
         isValidDate(date) &&
-        request.resource.data.keys().hasAll(['count']) &&
-        request.resource.data.keys().size() == 1 &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['count']) &&
+        request.resource.data.count is number &&
         request.resource.data.count == resource.data.count + 1
       );
     }
